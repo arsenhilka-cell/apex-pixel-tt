@@ -218,6 +218,17 @@ tbody td{padding:11px 10px;vertical-align:middle;font-size:13px;}
 
   <!-- RIGHT -->
   <div>
+    <!-- CONNECT LINK -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">⬡ Ссылка подключения</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Постоянная ссылка для добавления аккаунтов TikTok</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input class="finput" id="connect-link" readonly style="font-size:12px;font-family:monospace;color:var(--muted);cursor:pointer" onclick="this.select()" value="Загрузка...">
+        <button class="copy-btn" id="copy-link-btn" onclick="copyLink()" style="padding:8px 12px;flex-shrink:0">Копировать</button>
+        <button class="copy-btn" id="regen-btn" onclick="regenLink()" style="padding:8px 12px;flex-shrink:0" title="Перегенерировать">↻</button>
+      </div>
+    </div>
+
     <div class="card">
       <div class="card-title">
         ≡ Все пиксели
@@ -545,9 +556,38 @@ function copyId(id, btn){
 document.getElementById('act-modal').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeActModal(); });
 document.getElementById('del-modal').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeDelModal(); });
 
+// Connect link
+async function loadConnectLink(){
+  try{
+    const r = await fetch(`${API}/auth/connect-link`);
+    const data = await r.json();
+    document.getElementById('connect-link').value = data.url;
+  }catch(e){
+    document.getElementById('connect-link').value = 'Ошибка загрузки';
+  }
+}
+
+function copyLink(){
+  const val = document.getElementById('connect-link').value;
+  navigator.clipboard.writeText(val).then(()=>{
+    const btn = document.getElementById('copy-link-btn');
+    btn.textContent='✓ Скопировано'; btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent='Копировать'; btn.classList.remove('copied'); },1500);
+  });
+}
+
+async function regenLink(){
+  const btn = document.getElementById('regen-btn');
+  btn.textContent='...'; btn.disabled=true;
+  await loadConnectLink();
+  btn.textContent='↻'; btn.disabled=false;
+  showToast('Ссылка обновлена');
+}
+
 // Init
 loadAccounts();
 loadPixels();
+loadConnectLink();
 </script>
 </body>
 </html>
